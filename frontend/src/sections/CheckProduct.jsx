@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Github } from 'lucide-react';
 
 const required_fields = [
   'product_code',
@@ -228,13 +229,23 @@ const CheckProduct = () => {
 
         {result && renderResult(result)}
       </div>
-      <div className="mt-12 mb-8">
+      <div className="mt-12 flex items-center justify-center gap-4 mb-8">
         <button
           onClick={handleScrollToAbout}
+          title="About Section"
           className="px-6 py-3 bg-primary text-white rounded-full hover:bg-white hover:text-primary border-2 border-primary transition-colors duration-300"
         >
           About
         </button>
+        <a
+          href="https://github.com/FardinA143/ok2buy"
+          target="_blank"
+          rel="noopener noreferrer"
+          title="GitHub Repository"
+          className="w-12 h-12 flex items-center justify-center bg-primary text-white rounded-full hover:bg-white hover:text-primary border-2 border-primary transition-colors duration-300"
+        >
+          <Github size={24} />
+        </a>
       </div>
     </div>
   );
