@@ -1,18 +1,24 @@
-import os
 import json
-from classifier import SwissLegalClassifier
+import logging
+import os
 import re
+
+from classifier import SwissLegalClassifier
+
 
 def create_classifier() -> SwissLegalClassifier:
     return SwissLegalClassifier()
+
 
 def llm_query(product_description, legal_fragments, prompt_type):
     """Clasifica un producto dado su descripción y fragmentos legales"""
     classifier = create_classifier()
     if not classifier.client:
-        raise ConnectionError("No se pudo conectar con la API. Verifica tu .env")
+        raise ConnectionError(
+            "No se pudo conectar con la API. Verifica tu .env")
 
     return classifier.llm_query(product_description, legal_fragments, prompt_type)
+
 
 def start_classification(product_info: dict) -> dict:
     # first sanitize and prepare the product name and description
@@ -20,8 +26,8 @@ def start_classification(product_info: dict) -> dict:
     product_info_str = " ".join(f"{k}: {v}" for k, v in product_info.items())
     product_desc = llm_query(product_info_str, "", "describe")
     # product_desc = llm_query(product_info["product_name"] + ". " + product_info["product_description"], "", "describe")["content"]
-    print(f"Product description: {product_desc}") # debug
-    
+    logging.info(f"Product description: {product_desc}")  # debug
+
     laws = []
     laws_folder = './laws'
     for filename in os.listdir(laws_folder):
@@ -29,17 +35,19 @@ def start_classification(product_info: dict) -> dict:
             with open(os.path.join(laws_folder, filename), 'r', encoding='utf-8') as file:
                 laws.append(file.read())
     legal_fragments = "\n".join(laws)
-    
+
     relevant_laws = llm_query(product_desc, legal_fragments, "laws")
-    print(f"Relevant laws: {relevant_laws}") # debug
+    logging.info(f"Relevant laws: {relevant_laws}")  # debug
     # finally classify the product
-    classification_result = llm_query(product_desc, legal_fragments, "classify")
-    print(f"Classification result: {classification_result}") # debug
+    classification_result = llm_query(
+        product_desc, legal_fragments, "classify")
+    logging.info(f"Classification result: {classification_result}")  # debug
     # return a dict with legality status and reasoning
     try:
         classification_json = json.loads(classification_result)
-        list_of_reasoning = classification_json.get("reasoning", "").split(". ")
-        return  classification_json.get("classification", "unknown"), list_of_reasoning
+        list_of_reasoning = classification_json.get(
+            "reasoning", "").split(". ")
+        return classification_json.get("classification", "unknown"), list_of_reasoning
     except json.JSONDecodeError:
         # Try to clean and validate the output to ensure it's valid JSON
 
@@ -49,13 +57,14 @@ def start_classification(product_info: dict) -> dict:
             cleaned_result = match.group(1)
             try:
                 classification_json = json.loads(cleaned_result)
-                list_of_reasoning = classification_json.get("reasoning", "").split(". ")
+                list_of_reasoning = classification_json.get(
+                    "reasoning", "").split(". ")
                 return classification_json.get("classification", "unknown"), list_of_reasoning
             except Exception:
-                raise ValueError("No se pudo limpiar y validar la respuesta del modelo como JSON.")
+                raise ValueError(
+                    "No se pudo limpiar y validar la respuesta del modelo como JSON.")
         else:
-            raise ValueError("La respuesta del modelo no contiene un JSON válido.")
+            raise ValueError(
+                "La respuesta del modelo no contiene un JSON válido.")
     except Exception as e:
         raise ValueError(f"Error procesando la respuesta del modelo: {e}")
-    
-    
