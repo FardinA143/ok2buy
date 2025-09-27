@@ -11,11 +11,12 @@ def create_classifier() -> SwissLegalClassifier:
 
 
 def llm_query(product_description, legal_fragments, prompt_type):
-    """Clasifica un producto dado su descripción y fragmentos legales"""
+    """Classify a product given its description and legal fragments"""
     classifier = create_classifier()
     if not classifier.client:
         raise ConnectionError(
-            "No se pudo conectar con la API. Verifica tu .env")
+            "Could not connect to the LLM service. "
+            "Check your configuration.")
 
     return classifier.llm_query(product_description, legal_fragments, prompt_type)
 
